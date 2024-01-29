@@ -2,7 +2,7 @@ name: jenkis with github_actions
 on:
   push:
     branches:
-      - "main"
+      - "master"
 
 env:
   AWS_ACCESS_KEY_ID: ${{secretsAWS_ACCESS_KEY_ID}}
