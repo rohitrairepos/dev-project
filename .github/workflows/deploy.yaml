@@ -1,0 +1,68 @@
+name: jenkis with github_actions
+on:
+  push:
+    branches:
+      - "main"
+
+env:
+  AWS_ACCESS_KEY_ID: ${{secretsAWS_ACCESS_KEY_ID}}
+  AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+  AWS_SSH_KEY_PRIVATE: ${{secrets.AWS_SSH_KEY_PRIVATE}}
+  AWS_SSH_KEY_PUBLIC: ${{secrets.AWS_SSH_KEY_PUBLIC}}
+  AWS_TF_STATE_BUCKET_NAME: ${{secrets.AWS_TF_STATE_BUCKET_NAME}}
+  AWS_REGION: us-west-1
+
+jobs:
+  terraform-apply:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: latest
+
+      - name: Terraform Init
+        id: init
+        run: terraform init -backend-config="bucket=$AWS_TF_STATE_BUCKET_NAME" -backend-config="region=$AWS_REGION"
+        working-directory: ./jenkins-instance  
+
+      - name: Terraform Plan
+        id: plan
+        run: |-
+          terraform plan\
+          -var="region=$AWS_REGION"\
+          -var="public_key="$AWS_SSH_KEY_PUBLIC"\
+          -var="private_key=AWS_SSH_KEY_PRIVATE"\
+          -var="key_name=deployer-key"
+          -out=PLAN
+        working-directory: ./jenkins-instance
+
+      - name: Terraform Apply
+        id: apply
+        if: |
+          contains(github.event.head_commit.message, 'create Jenkins') || 
+          contains(github.event.head_commit.message, 'build Jenkins')
+        run: terraform apply PLAN -auto-approve  
+        working-directory: ./jenkins-instance
+
+  terraform-destroy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: latest
+    
+      
+      - name: Terraform Destroy
+        id: destroy
+        if: contains(github.event.head_commit.message, 'delete Jenkins')
+        run: terraform destroy -auto-approve
+        working-directory: ./jenkins-instance
