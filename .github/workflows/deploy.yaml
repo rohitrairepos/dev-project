@@ -68,5 +68,5 @@ jobs:
       - name: Terraform Destroy
         id: destroy
         if: contains(github.event.head_commit.message, 'delete Jenkins')
-        run: terraform destroy -auto-approve
+        run: terraform apply -destroy --auto-approve
         working-directory: ./jenkins-instance
