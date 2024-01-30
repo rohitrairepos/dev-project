@@ -61,10 +61,11 @@ resource "aws_instance" "aws_ins_web" {
   vpc_security_group_ids      = [aws_security_group.aws_sg.id]
   associate_public_ip_address = true
   #key_name                    = "aws-ec2" # your key here
+  key_name = aws_key_pair.deployer.key_name
   connection {
     
     type = "ssh"
-    host = sel.public_ip
+    host = self.public_ip
     user = "ubuntu"
     private_key = var.private_key
     timeout = "4m"
@@ -83,7 +84,7 @@ resource "aws_key_pair" "deployer" {
 }
 
 # an empty resource block
-resource "null_resource" "name" {
+resource "null_resource" "jenkins_config" {
 
   # ssh into the ec2 instance 
   connection {
