@@ -62,7 +62,7 @@ resource "aws_instance" "aws_ins_web" {
   associate_public_ip_address = true
   #key_name                    = "aws-ec2" # your key here
   key_name = aws_key_pair.deployer.key_name
-  connection {
+  /*connection {
     
     type = "ssh"
     host = self.public_ip
@@ -70,7 +70,7 @@ resource "aws_instance" "aws_ins_web" {
     private_key = var.private_key
     timeout = "4m"
   }
-
+*/
   tags = {
     Name = "Jenkis-server"
   }
