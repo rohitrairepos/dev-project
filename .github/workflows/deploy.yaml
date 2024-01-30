@@ -59,8 +59,12 @@ jobs:
         uses: hashicorp/setup-terraform@v1
         with:
           terraform_version: latest
-    
-      
+          
+      - name: Terraform Init
+        id: init
+        run: terraform init -backend-config="bucket=$AWS_TF_STATE_BUCKET_NAME" -backend-config="region=us-east-1"
+        working-directory: ./jenkins-instance  
+        
       - name: Terraform Destroy
         id: destroy
         if: contains(github.event.head_commit.message, 'delete Jenkins')
